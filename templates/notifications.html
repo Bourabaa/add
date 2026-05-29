@@ -1,0 +1,123 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Admin Notifications</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #1f2937; background: #f8fafc; }
+    h1, h2 { margin-bottom: 12px; }
+    .hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px; background: white; border-radius: 18px; padding: 20px 22px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+    .hero-copy { display: flex; flex-direction: column; gap: 4px; }
+    .hero-copy p { margin: 0; color: #64748b; }
+    .hero-logo { max-width: 320px; width: 100%; height: auto; object-fit: contain; }
+    .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .toolbar a { text-decoration: none; padding: 8px 12px; border-radius: 999px; background: #e2e8f0; color: #0f172a; }
+    .toolbar a.active { background: #0f766e; color: white; }
+    .grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; }
+    .panel { background: white; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    th { font-size: 12px; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .pending_review { background: #fef3c7; color: #92400e; }
+    .pending_auto_route { background: #dbeafe; color: #1d4ed8; }
+    .approved { background: #dcfce7; color: #166534; }
+    .rejected { background: #fee2e2; color: #991b1b; }
+    .published { background: #e9d5ff; color: #6b21a8; }
+    .decision-auto_route { color: #166534; font-weight: 700; }
+    .decision-manual_review { color: #92400e; font-weight: 700; }
+    textarea { width: 100%; min-height: 100px; padding: 10px; }
+    select, button { padding: 8px 10px; }
+    .meta { color: #475569; font-size: 14px; }
+    .empty { color: #64748b; font-style: italic; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow: auto; }
+    .mono { font-family: Consolas, monospace; }
+    @media (max-width: 900px) {
+      .hero { flex-direction: column; align-items: flex-start; }
+      .hero-logo { max-width: 260px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>Admin Notification Queue</h1>
+      <p>Prototype de routage intelligent pour les demandes e-Participation de <strong>data.gov.ma</strong>.</p>
+    </div>
+    <img src="{{ url_for('static', filename='add-logo.png') }}" alt="Logo ADD" class="hero-logo">
+  </section>
+  <div class="toolbar">
+    {% for item in statuses %}
+      <a href="{{ url_for('list_notifications_view', status=item) }}" class="{% if item == current_status %}active{% endif %}">{{ item }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Notifications</h2>
+      {% if notifications %}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Predicted Org</th>
+            <th>Confidence</th>
+            <th>Margin</th>
+            <th>Decision</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notification in notifications %}
+          <tr>
+            <td><a href="{{ url_for('notification_detail', notification_id=notification['id'], status=current_status) }}">#{{ notification['id'] }}</a></td>
+            <td>{{ notification['title'] }}</td>
+            <td>{{ notification['predicted_org_name'] or '-' }}</td>
+            <td>{{ '%.2f'|format(notification['top1_confidence']) }}%</td>
+            <td>{{ '%.2f'|format(notification['top1_margin']) }}</td>
+            <td class="decision-{{ notification['routing_decision'] }}">{{ notification['routing_decision'] }}</td>
+            <td><span class="badge {{ notification['review_status'] }}">{{ notification['review_status'] }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty">No notifications found for this status.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      {% if selected %}
+      <h2>Notification #{{ selected['id'] }}</h2>
+      <p class="meta"><strong>URL:</strong> <a href="{{ selected['feedback_url'] }}" target="_blank">{{ selected['feedback_url'] }}</a></p>
+      <p class="meta"><strong>Predicted org:</strong> {{ selected['predicted_org_name'] or '-' }} ({{ selected['predicted_org_slug'] or '-' }})</p>
+      <p class="meta"><strong>Decision:</strong> {{ selected['routing_decision'] }} | <strong>Confidence:</strong> {{ '%.2f'|format(selected['top1_confidence']) }}% | <strong>Margin:</strong> {{ '%.2f'|format(selected['top1_margin']) }}</p>
+      <p><strong>Description</strong><br>{{ selected['description'] }}</p>
+      <p><strong>Draft response</strong><br>{{ selected['draft_response'] }}</p>
+      <p><strong>Top candidates (JSON)</strong></p>
+      <pre>{{ top_candidates_json }}</pre>
+
+      <form method="post" action="{{ url_for('update_status', notification_id=selected['id']) }}">
+        <input type="hidden" name="status_filter" value="{{ current_status }}">
+        <label for="review_status"><strong>Review status</strong></label><br>
+        <select name="review_status" id="review_status">
+          {% for item in review_statuses %}
+            <option value="{{ item }}" {% if item == selected['review_status'] %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+        <p><strong>Review notes</strong></p>
+        <textarea name="review_notes">{{ selected['review_notes'] }}</textarea>
+        <div style="margin-top: 10px;">
+          <button type="submit">Save</button>
+        </div>
+      </form>
+      {% else %}
+      <h2>Details</h2>
+      <p class="empty">Select a notification from the table to inspect and validate it.</p>
+      {% endif %}
+    </section>
+  </div>
+</body>
+</html>

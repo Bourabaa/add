@@ -1,0 +1,34 @@
+{
+  "organizations": [
+    {
+      "organization_slug": "narsa",
+      "organization": "NARSA",
+      "full_name": "Agence Nationale de la Securite Routiere",
+      "aliases": ["narsa"],
+      "domains": ["transport", "securite routiere"],
+      "keywords_fr": ["accident", "route", "vehicule"],
+      "keywords_en": ["road", "traffic", "vehicle"],
+      "keywords_ar": [],
+      "profile_text": "NARSA Agence Nationale de la Securite Routiere transport securite routiere accident route vehicule"
+    },
+    {
+      "organization_slug": "ministere-de-la-sante",
+      "organization": "Ministere de la Sante",
+      "full_name": "Ministere de la Sante et de la Protection Sociale",
+      "aliases": ["sante", "msps"],
+      "domains": ["sante", "hopitaux", "medecins"],
+      "keywords_fr": ["medecin", "hopital", "soins", "sante"],
+      "keywords_en": ["health", "doctor", "hospital"],
+      "keywords_ar": [],
+      "profile_text": "Ministere de la Sante et de la Protection Sociale sante hopitaux medecins soins"
+    }
+  ],
+  "feedbacks": [
+    {
+      "feedback_id": "REQ-001",
+      "title": "Demande de donnees sur les accidents de la route",
+      "description": "Je souhaite obtenir des statistiques recentes sur les accidents et les vehicules."
+    }
+  ],
+  "top_k": 3
+}

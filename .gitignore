@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and local env
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Runtime data
+data/cache/
+data/raw/*
+data/samples/
+data/processed/*
+!data/processed/organisations_enriched.csv
+!data/processed/feedbacks_eval_ready.csv
+data/processed/*.db
+data/processed/*.sqlite
+data/processed/*.sqlite3
+
+# Generated reports and manual working exports
+reports/
+/processed/
+/report/
+tools/
+resume.md
+*.log
+texput.log
+*.xlsx
+
+# Local media / demo recordings
+Archi_Explication_demo.mp4
+.tmp/
+tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/extensions.json
